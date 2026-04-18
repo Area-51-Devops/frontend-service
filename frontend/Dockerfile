@@ -6,8 +6,6 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-
-
 # ---- Runtime stage -------
 FROM nginx:alpine
 RUN apk upgrade --no-cache
