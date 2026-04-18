@@ -12,6 +12,9 @@ on:
 jobs:
   call-common:
     uses: Area-51-Devops/ci-templates/.github/workflows/frontend-ci.yml@frontend
+    permissions:
+      contents: write      
+      packages: read
     with:
       working_directory: frontend
       image_name: frontend
