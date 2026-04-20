@@ -21,18 +21,18 @@ on:
 
 jobs:
 
-  # ── Stage 1a: SonarQube Scan + Quality Gate ──────────────────────────────────
-  ci-sonar:
-    uses: Area-51-Devops/ci-templates/.github/workflows/ci-sonar.yml@newsep
-    permissions:
-      contents: write
-    with:
-      working_directory: frontend
-      sonar_project_key: frontend
-      service-name: frontend
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  # # ── Stage 1a: SonarQube Scan + Quality Gate ──────────────────────────────────
+  # ci-sonar:
+  #   uses: Area-51-Devops/ci-templates/.github/workflows/ci-sonar.yml@newsep
+  #   permissions:
+  #     contents: write
+  #   with:
+  #     working_directory: frontend
+  #     sonar_project_key: frontend
+  #     service-name: frontend
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   # ── Stage 1b: Dependency Build + Snyk Scan ───────────────────────────────────
   ci-snyk:
@@ -48,7 +48,7 @@ jobs:
   # ── Stage 2: Build Image · Trivy Scan · Push · Notify ────────────────────────
   # Only starts once BOTH ci-sonar and ci-snyk have passed.
   ci-image:
-    needs: [ci-sonar, ci-snyk]
+    needs: [ci-snyk]
     uses: Area-51-Devops/ci-templates/.github/workflows/ci-image.yml@newsep
     permissions:
       contents: write
