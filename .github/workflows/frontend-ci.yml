@@ -1,5 +1,15 @@
 name: Frontend_CI
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Frontend CI — calls each reusable workflow directly (no common-ci.yml).
+#
+# Execution order:
+#   ci-sonar ──┐
+#              ├──► ci-image  (only starts when BOTH quality gates pass)
+#   ci-snyk  ──┘
+#
+# ──────────────────────────────────────────────────────────────────────────────
+
 on:
   push:
     paths:
@@ -10,24 +20,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  call-common:
-    uses: Area-51-Devops/ci-templates/.github/workflows/frontend-ci.yml@frontend
+
+  # ── Stage 1a: SonarQube Scan + Quality Gate ──────────────────────────────────
+  ci-sonar:
+    uses: Area-51-Devops/ci-templates/.github/workflows/ci-sonar.yml@newsep
     permissions:
-      contents: write      
-      packages: read
+      contents: write
+    with:
+      working_directory: frontend
+      sonar_project_key: frontend
+      service-name: frontend
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  # ── Stage 1b: Dependency Build + Snyk Scan ───────────────────────────────────
+  ci-snyk:
+    uses: Area-51-Devops/ci-templates/.github/workflows/ci-snyk.yml@newsep
+    permissions:
+      contents: write
+    with:
+      working_directory: frontend
+      service-name: frontend
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # ── Stage 2: Build Image · Trivy Scan · Push · Notify ────────────────────────
+  # Only starts once BOTH ci-sonar and ci-snyk have passed.
+  ci-image:
+    needs: [ci-sonar, ci-snyk]
+    uses: Area-51-Devops/ci-templates/.github/workflows/ci-image.yml@newsep
+    permissions:
+      contents: write
     with:
       working_directory: frontend
       image_name: frontend
       run_build: true
-      sonar_project_key: frontend
       docker_context: frontend
       dockerfile_path: Dockerfile
       service-name: frontend
-
     secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
