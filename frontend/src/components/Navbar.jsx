@@ -34,7 +34,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="nav-brand" onClick={() => navigate("/dashboard")}>
         <span className="nav-logo">🏦</span>
-        <span className="nav-title">NexusBank</span>
+        <span className="nav-title">NexusBank V2</span>
       </div>
       {isLoggedIn && (
         <>
